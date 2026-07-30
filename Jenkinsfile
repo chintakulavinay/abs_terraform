@@ -26,7 +26,7 @@ pipeline {
                         [$class: 'AmazonWebServicesCredentialsBinding',
                          credentialsId: 'aws-terraform']
                     ]) {
-                        bat 'terraform init'
+                        bat 'terraform init -reconfigure'
                     }
                 }
             }
