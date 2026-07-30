@@ -7,6 +7,5 @@ terraform {
 }
 
 provider "aws" {
-  alias = "qa"
   region = "us-east-1"
 }
