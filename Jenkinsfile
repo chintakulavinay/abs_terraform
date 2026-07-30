@@ -47,7 +47,7 @@ pipeline {
                         [$class: 'AmazonWebServicesCredentialsBinding',
                          credentialsId: 'aws-terraform']
                     ]) {
-                        bat 'terraform plan -out=tfplan'
+                        bat 'terraform plan -var-file=terraform.tfvars -out=tfplan'
                     }
                 }
             }
@@ -60,7 +60,7 @@ pipeline {
                         [$class: 'AmazonWebServicesCredentialsBinding',
                          credentialsId: 'aws-terraform']
                     ]) {
-                        bat 'terraform apply -auto-approve tfplan'
+                        bat 'terraform apply -auto-approve -var-file=terraform.tfvars tfplan'
                     }
                 }
             }
