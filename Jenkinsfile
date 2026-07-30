@@ -12,21 +12,8 @@ pipeline {
         stage('Set Environment') {
             steps {
                 script {
+                    env.TF_DIR = 'environments/prod'
 
-                    if (env.BRANCH_NAME == 'dev') {
-                        env.TF_DIR = 'environments/dev'
-                    }
-                    else if (env.BRANCH_NAME == 'qa') {
-                        env.TF_DIR = 'environments/qa'
-                    }
-                    else if (env.BRANCH_NAME == 'main') {
-                        env.TF_DIR = 'environments/prod'
-                    }
-                    else {
-                        error "Unsupported branch: ${env.BRANCH_NAME}"
-                    }
-
-                    echo "Branch: ${env.BRANCH_NAME}"
                     echo "Terraform Directory: ${env.TF_DIR}"
                 }
             }
@@ -60,18 +47,9 @@ pipeline {
                         [$class: 'AmazonWebServicesCredentialsBinding',
                          credentialsId: 'aws-terraform']
                     ]) {
-                        bat 'terraform plan -out=tfplan'
+                        bat 'terraform plan -var-file=terraform.tfvars -out=tfplan'
                     }
                 }
-            }
-        }
-
-        stage('Prod Approval') {
-            when {
-                branch 'main'
-            }
-            steps {
-                input 'Approve Production Deployment?'
             }
         }
 
@@ -82,10 +60,20 @@ pipeline {
                         [$class: 'AmazonWebServicesCredentialsBinding',
                          credentialsId: 'aws-terraform']
                     ]) {
-                        bat 'terraform apply -auto-approve tfplan'
+                        bat 'terraform apply -auto-approve -var-file=terraform.tfvars tfplan'
                     }
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Dev deployment completed successfully.'
+        }
+
+        failure {
+            echo 'Dev deployment failed.'
         }
     }
 }
