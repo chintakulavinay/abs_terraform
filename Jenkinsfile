@@ -12,21 +12,8 @@ pipeline {
         stage('Set Environment') {
             steps {
                 script {
+                    env.TF_DIR = 'environments/dev'
 
-                    if (env.BRANCH_NAME == 'dev') {
-                        env.TF_DIR = 'environments/dev'
-                    }
-                    else if (env.BRANCH_NAME == 'qa') {
-                        env.TF_DIR = 'environments/qa'
-                    }
-                    else if (env.BRANCH_NAME == 'main') {
-                        env.TF_DIR = 'environments/prod'
-                    }
-                    else {
-                        error "Unsupported branch: ${env.BRANCH_NAME}"
-                    }
-
-                    echo "Branch: ${env.BRANCH_NAME}"
                     echo "Terraform Directory: ${env.TF_DIR}"
                 }
             }
@@ -66,15 +53,6 @@ pipeline {
             }
         }
 
-        stage('Prod Approval') {
-            when {
-                branch 'main'
-            }
-            steps {
-                input 'Approve Production Deployment?'
-            }
-        }
-
         stage('Terraform Apply') {
             steps {
                 dir("${env.TF_DIR}") {
@@ -86,6 +64,16 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Dev deployment completed successfully.'
+        }
+
+        failure {
+            echo 'Dev deployment failed.'
         }
     }
 }
